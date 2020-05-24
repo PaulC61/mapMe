@@ -3,6 +3,7 @@ package com.example.mapmeapp;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -10,14 +11,21 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, Serializable {
 
+    private static final String LOG_TAG = MapsActivity.class.getSimpleName();
+    public static final String EXTRA_MARKERS = "com.example.android.mapmeapp.extra.MARKERS";
+    private static final int MARKER_REQUEST = 1;
 
     private GoogleMap mMap;
+    private List<MarkerOptions> markers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +35,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        if(savedInstanceState != null){
+            markers = (List<MarkerOptions>) savedInstanceState.getSerializable(EXTRA_MARKERS);
+        }
+
+
     }
 
 
@@ -44,8 +58,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+       mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+           @Override
+           public void onMapClick(LatLng latLng) {
+               Intent intent = new Intent(MapsActivity.this, AddMarkerActivity.class);
+
+           }
+       });
     }
 }
