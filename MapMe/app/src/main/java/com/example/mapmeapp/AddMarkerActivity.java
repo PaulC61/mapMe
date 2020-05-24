@@ -2,6 +2,7 @@ package com.example.mapmeapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -19,10 +20,22 @@ public class AddMarkerActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         final MarkerOptions newMarker = intent.getParcelableExtra("MARKER");
-
         final EditText new_title = findViewById(R.id.input_marker_title);
         final EditText new_description = findViewById(R.id.input_marker_description);
-
         Button button_add_marker = findViewById(R.id.button_add_marker);
+
+        button_add_marker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String saveTitle = new_title.getText().toString();
+                String saveDescription = new_description.getText().toString();
+                newMarker.title(saveTitle);
+                newMarker.snippet(saveDescription);
+                Intent outputIntent = new Intent();
+                outputIntent.putExtra("MARKER", newMarker);
+                setResult(RESULT_OK, outputIntent);
+                finish();
+            }
+        });
     }
 }
