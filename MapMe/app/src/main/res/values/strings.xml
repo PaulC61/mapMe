@@ -4,4 +4,5 @@
     <string name="marker_instructions">Add a Title and short Description</string>
     <string name="hint_enter_title">Enter Title</string>
     <string name="hint_enter_description">Enter Description</string>
+    <string name="menu_my_favourites">My Favourites</string>
 </resources>
