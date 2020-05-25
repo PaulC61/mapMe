@@ -24,7 +24,6 @@ import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, Serializable {
 
-    private static final String LOG_TAG = MapsActivity.class.getSimpleName();
     public static final String EXTRA_MARKERS = "com.example.android.mapmeapp.extra.MARKERS";
     private static final int MARKER_REQUEST = 1;
 
