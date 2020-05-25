@@ -1,10 +1,14 @@
 package com.example.mapmeapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,7 +29,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int MARKER_REQUEST = 1;
 
     private GoogleMap mMap;
-    private List<MarkerOptions> markers = new ArrayList<>();
+    private List<MarkerOptions> myMarkers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,34 +40,71 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        if(savedInstanceState != null){
-            markers = (List<MarkerOptions>) savedInstanceState.getSerializable(EXTRA_MARKERS);
+        if (savedInstanceState != null) {
+            myMarkers = (List<MarkerOptions>) savedInstanceState.getSerializable(EXTRA_MARKERS);
         }
+    }
 
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_bar, menu);
+        return true;
     }
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem favourite) {
+        if (favourite.getItemId() == R.id.menu_favourites_button) {
+            Intent intent = new Intent(MapsActivity.this, FavouritesActivity.class);
+            intent.putStringArrayListExtra(EXTRA_MARKERS, getMarkerTitles(myMarkers));
+            startActivity(intent);
+        }
+        return true;
+    }
+
+    public ArrayList<String> getMarkerTitles(List<MarkerOptions> myMarkers) {
+        ArrayList<String> markerTitles = new ArrayList<>();
+        for (MarkerOptions marker : myMarkers) {
+            markerTitles.add(marker.getTitle());
+        }
+        return markerTitles;
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-       mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-           @Override
-           public void onMapClick(LatLng latLng) {
-               Intent intent = new Intent(MapsActivity.this, AddMarkerActivity.class);
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLang) {
+                Intent intent = new Intent(MapsActivity.this, AddMarkerActivity.class);
+                MarkerOptions newMarker = new MarkerOptions().position(latLang);
+                intent.putExtra("MARKER", newMarker);
+                startActivityForResult(intent, MARKER_REQUEST);
+            }
+        });
+    }
 
-           }
-       });
+    @Override
+    public void onActivityResult(int request, int result, Intent intent) {
+        super.onActivityResult(request, result, intent);
+        if (request == MARKER_REQUEST) {
+            if (result == RESULT_OK) {
+                MarkerOptions newMarker = intent.getParcelableExtra("MARKER");
+                mMap.addMarker(newMarker);
+                myMarkers.add(newMarker);
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(newMarker.getPosition()));
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState){
+        super.onSaveInstanceState(outState);
+        if(myMarkers.size()>1){
+            outState.putSerializable(EXTRA_MARKERS, (Serializable) myMarkers);
+        }
     }
 }
