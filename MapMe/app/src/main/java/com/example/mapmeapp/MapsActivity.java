@@ -1,5 +1,6 @@
 package com.example.mapmeapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
@@ -39,26 +40,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             myMarkers = (List<MarkerOptions>) savedInstanceState.getSerializable(EXTRA_MARKERS);
         }
-
-
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu){
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_bar, menu);
         return true;
     }
 
 
-
-
     @Override
-    public boolean onOptionsItemSelected(MenuItem favourite){
-        if(favourite.getItemId() == R.id.menu_favourites_button) {
+    public boolean onOptionsItemSelected(MenuItem favourite) {
+        if (favourite.getItemId() == R.id.menu_favourites_button) {
             Intent intent = new Intent(MapsActivity.this, FavouritesActivity.class);
             intent.putStringArrayListExtra(EXTRA_MARKERS, getMarkerTitles(myMarkers));
             startActivity(intent);
@@ -66,9 +63,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return true;
     }
 
-    public ArrayList<String> getMarkerTitles(List<MarkerOptions> myMarkers){
+    public ArrayList<String> getMarkerTitles(List<MarkerOptions> myMarkers) {
         ArrayList<String> markerTitles = new ArrayList<>();
-        for (MarkerOptions marker : myMarkers){
+        for (MarkerOptions marker : myMarkers) {
             markerTitles.add(marker.getTitle());
         }
         return markerTitles;
@@ -79,16 +76,35 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-       mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-           @Override
-           public void onMapClick(LatLng latLang) {
-               Intent intent = new Intent(MapsActivity.this, AddMarkerActivity.class);
-               MarkerOptions newMarker = new MarkerOptions().position(latLang);
-               intent.putExtra("MARKER", newMarker);
-               startActivityForResult(intent, MARKER_REQUEST);
-           }
-       });
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLang) {
+                Intent intent = new Intent(MapsActivity.this, AddMarkerActivity.class);
+                MarkerOptions newMarker = new MarkerOptions().position(latLang);
+                intent.putExtra("MARKER", newMarker);
+                startActivityForResult(intent, MARKER_REQUEST);
+            }
+        });
     }
 
+    @Override
+    public void onActivityResult(int request, int result, Intent intent) {
+        super.onActivityResult(request, result, intent);
+        if (request == MARKER_REQUEST) {
+            if (result == RESULT_OK) {
+                MarkerOptions newMarker = intent.getParcelableExtra("MARKER");
+                mMap.addMarker(newMarker);
+                myMarkers.add(newMarker);
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(newMarker.getPosition()));
+            }
+        }
+    }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState){
+        super.onSaveInstanceState(outState);
+        if(myMarkers.size()>1){
+            outState.putSerializable(EXTRA_MARKERS, (Serializable) myMarkers);
+        }
+    }
 }
